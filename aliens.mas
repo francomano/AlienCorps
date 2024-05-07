@@ -1,0 +1,8 @@
+<apaplmas>
+    <environment name="" file="">
+	<parameter key="" value=""/>
+    </environment>
+    <agent name="logisticManager" file="logisticManager.2apl"/>
+    <agent name="tradeManager" file="tradeManager.2apl"/>
+</apaplmas>
+	
