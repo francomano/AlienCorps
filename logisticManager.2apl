@@ -1,0 +1,26 @@
+beliefupdates : 
+    {not sold(ProductID)} updateStatus(ProductID) {sold(ProductID)}
+
+beliefs :
+    
+goals :
+
+plans :
+    
+pcrules:
+    message(tradeManager, inform, La, On, sold(ProductID)) <- true |
+    {
+        adopta(send(ProductID));
+        updateStatus(ProductID);
+        @env(trackInventory(ProductID), L); //external action to a text file
+    } 
+
+pgrules :
+    send(ProductID) <- sold(ProductID) | 
+    {
+        send(manifacturingManafer, ask, ProductID);
+        @env(shippedProd(ProductID), L);
+    }
+
+prrules :
+    

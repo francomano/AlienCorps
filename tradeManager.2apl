@@ -1,24 +1,30 @@
-TradeManagerAgent :
-    beliefupdates :
-        {true} startNegotiation(ProductID) {price(ProductID,100)}.
-	{not sold(ProductID)} endNegotiation(ProductID) {sold(ProductID)}
+beliefupdates :
+    {true} startNegotiation(ProductID) {price(ProductID,100)}.
+    {not sold(ProductID)} endNegotiation(ProductID) {sold(ProductID)}
 
-    beliefs :
-        
+beliefs :
+    
+goals :
 
-    goals :
+plans :
+    
+pcrules:
+    event(request(ProductID)) <- true |
+        {
+            startNegotiation(ProductID);
+            adopta(sold(ProductID));
+        }
 
-    plans :
-        
-    pcrules:
-	event(request(ProductID) <- true |
-	{startNegotiation(ProductID);adopta(sold(ProductID));}
-	
+    event(accept(ProductID, price)) <- not sold(ProductID) |
+    {
+        endNegotiation(ProductID);
+        send(logisticManager, inform, ProductID);
+    }
 
-    pgrules :
-        sold(ProductID) <- true |
-	{@env(SendPrice(price(ProductID),L); //L is a list of return values
-	}
-
-    prrules :
+pgrules :
+    sold(ProductID) <- true |
+        {
+            @env(SendPrice(price(ProductID)),L); //L is a list of return values
+        }
+prrules :
         
