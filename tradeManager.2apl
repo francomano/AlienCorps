@@ -18,7 +18,7 @@ pcrules:
     event(accept(ProductID, price)) <- not sold(ProductID) |
     {
         endNegotiation(ProductID);
-        send(logisticManager, inform, ProductID);
+        send(logisticManager, inform, sold(ProductID));
     }
 
 pgrules :
