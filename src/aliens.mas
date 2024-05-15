@@ -1,5 +1,5 @@
 <apaplmas>
-    <environment name="" file="">
+    <environment name="env" file="Env.jar">
 	<parameter key="" value=""/>
     </environment>
     <agent name="logisticManager" file="logisticManager.2apl"/>
