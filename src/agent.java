@@ -9,7 +9,8 @@
 
 import java.awt.Point;
 
-import nl.uu.cs.is.apapl.environments.blockworld.lib.Signal;
+import blockworld.TypeObject;
+import blockworld.lib.Signal;
 
 // / Agent representation in Env. This doubles as a plugin instance.
 public class Agent 

@@ -1,9 +1,11 @@
-import nl.uu.cs.is.apapl.apapl.Environment;
-import nl.uu.cs.is.apapl.apapl.ExternalActionFailedException;
-import nl.uu.cs.is.apapl.apapl.data.APLFunction;
-import nl.uu.cs.is.apapl.apapl.data.APLIdent;
-import nl.uu.cs.is.apapl.apapl.data.APLNum;
-import nl.uu.cs.is.apapl.apapl.data.Term;
+import java.util.HashMap;
+import java.util.Scanner;
+
+import apapl.Environment;
+import apapl.data.APLFunction;
+import apapl.data.APLIdent;
+import blockworld.lib.ObsVect;
+import blockworld.lib.ObsVectListener;
 
 /**
  * === About this file
@@ -39,10 +41,13 @@ import nl.uu.cs.is.apapl.apapl.data.Term;
  * @author Marc van Zee (marcvanzee@gmail.com), Utrecht University
  *
  */
-public class Env extends Environment {
+public class Env extends Environment implements ObsVectListener {
     private final boolean log = true;
-
-    // list of agents (Agent)
+	//private HashMap<String,Agent> 			agentmap = new HashMap<String,Agent>();
+	
+	/* ---- ALL the stuff in the environment -----*/
+	
+	// list of agents (Agent)
 	protected ObsVect 						_agents = new ObsVect( this );
 	
 
@@ -127,30 +132,19 @@ public class Env extends Environment {
         if (log) System.out.println(str);
     }
 
+    @Override
+    public void onAdd(int arg0, Object arg1) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'onAdd'");
+    }
+
+    @Override
+    public void onRemove(int arg0, Object arg1) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'onRemove'");
+    }
+
     /* Standard functions --------------------------------------*/
-	
-	private void notifyEvent(String parm1, Point ptPosition)
-	{
-		APLNum	nX	= new APLNum((double)(ptPosition.getX()));
-		APLNum	nY	= new APLNum((double)(ptPosition.getY()));
-
-		// Send an external event to all agents within the senserange.
-		ArrayList<String> targetAgents = new ArrayList<String>();
-		for (Agent a : agentmap.values())
-		{
-			// Changed SA: I got no idea why there is always 1 agent which does not exists, 
-			// but this fixes the exceptions
-			if ((a.getPosition() != null) && (ptPosition.distance(a.getPosition()) <= getSenseRange()))
-				targetAgents.add(a.getName());
-		}
-
-		writeToLog("EVENT: "+parm1+"("+nX+","+nY+")"+" to "+targetAgents);
-
-		if (!targetAgents.isEmpty())
-		{
-			notifyAgents(new APLFunction(parm1,nX,nY),targetAgents.toArray(new String[0]));
-		}
-	}
 }
 
 
