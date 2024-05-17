@@ -125,10 +125,7 @@ public class Env extends Environment implements ObsVectListener {
         // Constructing the event term for choosing a product
         APLIdent productIDTerm = new APLIdent(productID);
         APLFunction event = new APLFunction("request", productIDTerm);
-        log("checkpoint");
- 
         throwEvent(event, agName);
-        log("checkpoint2");
     }
 
     private void log(String str) {

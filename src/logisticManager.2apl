@@ -15,11 +15,15 @@ pgrules:
   }
     
 pcrules:
+   event(name(Name), env) <- true | {
+		+name(Name);
+   }
+
   message(tradeManager, inform, La, On, sold(productID)) <- true |
   {
-     adopta( sendproduct( productID ) );
-     UpdateStatus(productID);
-     @env(trackInventory(productID), L); //external action to a text file
+    adopta( sendproduct( productID ) );
+    UpdateStatus(productID);
+    @env(trackInventory(productID), L); //external action to a text file
   } 
 
 prrules:

@@ -15,13 +15,17 @@ pgrules:
     }
     
 pcrules:
-  event(request(productID)) <- true |
+  event(name(Name), env) <- true | {
+		+name(Name);
+	}
+	
+  event(request(productID), env) <- true |
     {
       StartNegotiation(productID);
       adopta(sold(productID));
     }
 
-    event(accept(productID, price)) <- not sold(productID) |
+  event(accept(productID, price),env) <- not sold(productID) |
     {
       EndNegotiation(productID);
       send(logisticManager, inform, sold(productID));
