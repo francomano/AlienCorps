@@ -1,30 +1,31 @@
-beliefupdates :
-    {true} startNegotiation(ProductID) {price(ProductID,100)}.
-    {not sold(ProductID)} endNegotiation(ProductID) {sold(ProductID)}
+beliefupdates:
+  {true} StartNegotiation(productID) {price(productID,100)}
+  {not sold(productID)} EndNegotiation(productID) {sold(productID)}
 
-beliefs :
+beliefs:
     
-goals :
+goals:
 
-plans :
+plans:
+
+pgrules:
+    sold(productID) <- true |
+    {
+      @env( sendPrice( price( productID ) ),L );
+    }
     
 pcrules:
-    event(request(ProductID)) <- true |
-        {
-            startNegotiation(ProductID);
-            adopta(sold(ProductID));
-        }
-
-    event(accept(ProductID, price)) <- not sold(ProductID) |
+  event(request(productID)) <- true |
     {
-        endNegotiation(ProductID);
-        send(logisticManager, inform, sold(ProductID));
+      StartNegotiation(productID);
+      adopta(sold(productID));
     }
 
-pgrules :
-    sold(ProductID) <- true |
-        {
-            @env(SendPrice(price(ProductID)),L); //L is a list of return values
-        }
-prrules :
+    event(accept(productID, price)) <- not sold(productID) |
+    {
+      EndNegotiation(productID);
+      send(logisticManager, inform, sold(productID));
+    }
+    
+prrules:
         

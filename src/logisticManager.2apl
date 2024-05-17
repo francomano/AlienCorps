@@ -1,26 +1,26 @@
-beliefupdates : 
-    {not sold(ProductID)} updateStatus(ProductID) {sold(ProductID)}
-
-beliefs :
+beliefupdates: 
+  { not sold(productID) } UpdateStatus(productID) { sold(productID) }
+  
+beliefs:
     
-goals :
+goals:
+  
+plans:
 
-plans :
+pgrules:
+  sendproduct( productID ) <- sold( productID ) |
+  {
+    send(manifacturingManafer, ask, productID);
+    @env(shippedProd(productID), L);
+  }
     
 pcrules:
-    message(tradeManager, inform, La, On, sold(ProductID)) <- true |
-    {
-        adopta(send(ProductID));
-        updateStatus(ProductID);
-        @env(trackInventory(ProductID), L); //external action to a text file
-    } 
+  message(tradeManager, inform, La, On, sold(productID)) <- true |
+  {
+     adopta( sendproduct( productID ) );
+     UpdateStatus(productID);
+     @env(trackInventory(productID), L); //external action to a text file
+  } 
 
-pgrules :
-    send(ProductID) <- sold(ProductID) | 
-    {
-        send(manifacturingManafer, ask, ProductID);
-        @env(shippedProd(ProductID), L);
-    }
-
-prrules :
+prrules:
     
