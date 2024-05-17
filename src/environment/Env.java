@@ -57,33 +57,6 @@ public class Env extends Environment implements ObsVectListener {
      * @param args arguments
      */
     public static void main(String [] args) {
-        //todo interface with user to request product
-        String[] products = {"Product1", "Product2", "Product3", "Product4"};
-
-        // Prompt the user to select a product
-        System.out.println("Please select a product:");
-
-        // Display product options
-        for (int i = 0; i < products.length; i++) {
-            System.out.println((i+1) + ". " + products[i]);
-        }
-
-        // Read user input
-        Scanner scanner = new Scanner(System.in);
-        int choice = scanner.nextInt();
-
-        // Validate user input
-        if (choice >= 1 && choice <= products.length) {
-            String selectedProduct = products[choice - 1];
-            System.out.println("You have selected: " + selectedProduct);
-            // Call your method to handle the selected product (e.g., chooseProduct(selectedProduct))
-            Env env = new Env();
-            env.chooseProduct(selectedProduct);
-        } else {
-            System.out.println("Invalid selection. Please select a number between 1 and " + products.length);
-        }
-        
-        scanner.close();
     }
 
     /**
@@ -115,17 +88,47 @@ public class Env extends Environment implements ObsVectListener {
 
         // note: we can also throw an event to all agents by letting out the last parameter:
         // throwEvent(event);
+        
+        if(agName.equals("tradeManager")){
+			//todo interface with user to request product
+			String[] products = {"Product1", "Product2", "Product3", "Product4"};
+
+			// Prompt the user to select a product
+			log("Please select a product:");
+
+			// Display product options
+			for (int i = 0; i < products.length; i++) {
+				System.out.println((i+1) + ". " + products[i]);
+			}
+
+			// Read user input
+			Scanner scanner = new Scanner(System.in);
+			int choice = scanner.nextInt();
+
+			// Validate user input
+			if (choice >= 1 && choice <= products.length) {
+				String selectedProduct = products[choice - 1];
+				System.out.println("You have selected: " + selectedProduct);
+				// Call your method to handle the selected product (e.g., chooseProduct(selectedProduct))
+				chooseProduct(selectedProduct, agName);
+			} else {
+				System.out.println("Invalid selection. Please select a number between 1 and " + products.length);
+			}
+			
+			scanner.close();
+		}
     }
 
-    private void chooseProduct(String productID) {
+    private void chooseProduct(String productID, String agName) {
         log("env> Product " + productID + " has been chosen.");
 
         // Constructing the event term for choosing a product
         APLIdent productIDTerm = new APLIdent(productID);
         APLFunction event = new APLFunction("request", productIDTerm);
-
+        log("checkpoint");
  
-        throwEvent(event, "tradeManager");
+        throwEvent(event, agName);
+        log("checkpoint2");
     }
 
     private void log(String str) {
