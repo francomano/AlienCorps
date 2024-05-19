@@ -2,8 +2,11 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 import apapl.Environment;
+import apapl.ExternalActionFailedException;
 import apapl.data.APLFunction;
 import apapl.data.APLIdent;
+import apapl.data.APLNum;
+import apapl.data.Term;
 import blockworld.lib.ObsVect;
 import blockworld.lib.ObsVectListener;
 
@@ -80,25 +83,27 @@ public class Env extends Environment implements ObsVectListener {
          *					Term objects. For example, the function: func(0) should be instantiated as
          *					new APLFunction("func", new APLNum(0))
          */
-        APLIdent aplagName = new APLIdent(agName);
-        APLFunction event = new APLFunction("name", aplagName);
+
+        //for testing purpose
+        //APLIdent aplagName = new APLIdent(agName);
+        //APLFunction event = new APLFunction("name", aplagName);
 
         // If we throw an event, we always need to throw an APLFunction.
-        throwEvent(event, agName);
+        //throwEvent(event, agName);
 
         // note: we can also throw an event to all agents by letting out the last parameter:
         // throwEvent(event);
         
         if(agName.equals("tradeManager")){
 			//todo interface with user to request product
-			String[] products = {"Product1", "Product2", "Product3", "Product4"};
+			String[] products = {"1", "2", "3", "4"};
 
 			// Prompt the user to select a product
 			log("Please select a product:");
 
 			// Display product options
 			for (int i = 0; i < products.length; i++) {
-				System.out.println((i+1) + ". " + products[i]);
+				System.out.println((i+1) + ". " +"Product" + products[i]);
 			}
 
 			// Read user input
@@ -145,6 +150,29 @@ public class Env extends Environment implements ObsVectListener {
     }
 
     /* Standard functions --------------------------------------*/
+    /**
+	 * External actions of agents can be caught by defining methods that have a Term as return value.
+	 * This method can be called by a 2APL agents as follows: \@env(square(5), X).
+	 * X will now contain the return value, in this case 25.
+	 * @param agName The name of the agent that does the external action
+	 * @param num The num to calculate the square of, coded in an APLNum
+	 * @return The square of the input, coded in an APLNum
+	 */
+	public Term trackInventory(String agName, APLIdent aplNum) throws ExternalActionFailedException {
+		int num = Integer.parseInt(aplNum.toString());
+		
+		log("env> agent " + agName + " wants to track inventory for product with id " + num);
+        // TODO check inventory and give a response
+		return null;
+	}
+
+    public Term shipProd(String agName, APLNum aplNum) throws ExternalActionFailedException {
+		int num = aplNum.toInt();
+		
+		log("env> agent " + agName + " wants to ship product with id " + num);
+        // TODO ship product
+		return null;
+	}
 }
 
 

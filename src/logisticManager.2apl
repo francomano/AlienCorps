@@ -1,5 +1,5 @@
 beliefupdates: 
-  { not sold(productID) } UpdateStatus(productID) { sold(productID) }
+  { not sold(ProductID) } UpdateStatus(ProductID) { sold(ProductID) }
   
 beliefs:
     
@@ -8,22 +8,19 @@ goals:
 plans:
 
 pgrules:
-  sendproduct( productID ) <- sold( productID ) |
-  {
-    send(manifacturingManafer, ask, productID);
-    @env(shippedProd(productID), L);
+  sendproduct(ProductID) <- sold(ProductID) |
+  { 
+    @env( shipProd( ProductID ), L);
+    +sendproduct(ProductID);
   }
-    
-pcrules:
-   event(name(Name), env) <- true | {
-		+name(Name);
-   }
 
-  message(tradeManager, inform, La, On, sold(productID)) <- true |
+pcrules:
+  message( tradeManager, inform, La, On, sold(ProductID)) <- true |
   {
-    adopta( sendproduct( productID ) );
-    UpdateStatus(productID);
-    @env(trackInventory(productID), L); //external action to a text file
+    adopta(sendproduct(ProductID));
+    UpdateStatus(ProductID);
+    send(manifacturingManager, request, check(ProductID));
+    @env(trackInventory(ProductID), L);
   } 
 
 prrules:

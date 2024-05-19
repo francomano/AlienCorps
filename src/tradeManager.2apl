@@ -15,10 +15,6 @@ pgrules:
     }
     
 pcrules:
-  event(name(Name), env) <- true | {
-		+name(Name);
-	}
-	
   event(request(ProductID), env) <- true |
     {
       StartNegotiation(ProductID);
