@@ -173,6 +173,12 @@ public class Env extends Environment implements ObsVectListener {
         // TODO ship product
 		return null;
 	}
+	public Term sendPrice(String agName, APLNum id, APLNum price) throws ExternalActionFailedException {
+		int prodID = id.toInt();
+		int num = price.toInt();
+		log("env> agent " + agName + "proposes the price of: " + num + " for the product with id: " + prodID);
+		return null;
+	}
 }
 
 

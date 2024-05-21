@@ -9,9 +9,10 @@ goals:
 plans:
 
 pgrules:
-    sold(ProductID) <- true |
+    sold(ProductID) <- price(ProductID,Digit) |
     {
-      @env( sendPrice( price( ProductID ) ),L );
+      @env(sendPrice(ProductID,Digit),L);
+      
     }
     
 pcrules:
