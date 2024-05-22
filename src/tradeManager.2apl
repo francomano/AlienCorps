@@ -1,7 +1,7 @@
 beliefupdates:
-  {true} StartNegotiation(ProductID) {price(ProductID,100)}
+  {true} StartNegotiation(ProductID) {price(ProductID,90)}
   {not sold(ProductID)} EndNegotiation(ProductID) {sold(ProductID)}
-
+  {price(ProductID,Price)} UpdatePrice(ProductID,Newprice) {price(ProductID, Newprice)}
 beliefs:
     
 goals:
@@ -22,10 +22,14 @@ pcrules:
       adopta(sold(ProductID));
     }
 
-  event(accept(ProductID, price),env) <- not sold(ProductID) |
+  event(accept(ProductID, Price),env) <- not sold(ProductID) |
     {
       EndNegotiation(ProductID);
       send(logisticManager, inform, sold(ProductID));
+    }
+  event(newprice(ProductID, Newprice),env) <- not sold(ProductID) |
+    {
+      UpdatePrice(ProductID,Newprice);
     }
     
 prrules:

@@ -1,5 +1,7 @@
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import apapl.Environment;
 import apapl.ExternalActionFailedException;
@@ -175,9 +177,32 @@ public class Env extends Environment implements ObsVectListener {
 	}
 	public Term sendPrice(String agName, APLNum id, APLNum price) throws ExternalActionFailedException {
 		int prodID = id.toInt();
-		int num = price.toInt();
-		log("env> agent " + agName + "proposes the price of: " + num + " for the product with id: " + prodID);
+		int p = price.toInt();
+        p+=10;
+		log("env> agent " + agName + "proposes the price of: " + p + " for the product with id: " + prodID);
+		negotiate(agName,prodID,p);
 		return null;
+	}
+	public void negotiate(String agName, int prodID, int p) {
+        String[] choises = {"yes","no"};  
+        java.util.Random random = new java.util.Random();
+        int random_choise = random.nextInt(choises.length);
+        String choise = choises[random_choise];
+        log("Accept the price - Customer decision: " + choise);
+        if(choise.equals("yes")){
+            APLNum productIDTerm = new APLNum(prodID);
+            APLNum newprice = new APLNum(p);
+            APLFunction event = new APLFunction("accept", productIDTerm, newprice);
+            throwEvent(event, agName);
+        }
+        else{
+            APLNum productIDTerm = new APLNum(prodID);
+            APLNum newprice = new APLNum(p/2);
+            APLFunction event = new APLFunction("newprice", productIDTerm, newprice);
+            throwEvent(event, agName);
+        }
+
+
 	}
 }
 
