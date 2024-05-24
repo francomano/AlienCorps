@@ -1,7 +1,7 @@
 beliefupdates:
   {true} StartNegotiation(ProductID) {price(ProductID,90)}
   {not sold(ProductID)} EndNegotiation(ProductID) {sold(ProductID)}
-  {price(ProductID,Price)} UpdatePrice(ProductID,Newprice) {price(ProductID, Newprice)}
+  {price(ProductID,Price)} UpdatePrice(ProductID,Newprice) {price(ProductID, Newprice),not price(ProductID,Price)}
 beliefs:
     
 goals:
