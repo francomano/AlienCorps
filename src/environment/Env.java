@@ -1,4 +1,10 @@
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -11,7 +17,7 @@ import apapl.data.APLNum;
 import apapl.data.Term;
 import blockworld.lib.ObsVect;
 import blockworld.lib.ObsVectListener;
-
+import com.opencsv.*;
 /**
  * === About this file
  * This is an example of a very simple environment that communicates with a single 2APl agent.
@@ -55,6 +61,8 @@ public class Env extends Environment implements ObsVectListener {
 	// list of agents (Agent)
 	protected ObsVect 						_agents = new ObsVect( this );
 	
+    private Map<Integer, Integer> productQuantities;
+
 
     /**
      * We do not use this method, but we need it so that the JAR file that we will create can point
@@ -63,7 +71,6 @@ public class Env extends Environment implements ObsVectListener {
      */
     public static void main(String [] args) {
     }
-
     /**
      * This method is automatically called whenever an agent enters the MAS.
      * @param agName the name of the agent that just registered
@@ -151,20 +158,61 @@ public class Env extends Environment implements ObsVectListener {
         throw new UnsupportedOperationException("Unimplemented method 'onRemove'");
     }
 
-    /* Standard functions --------------------------------------*/
-    /**
+    /* Standard functions --------------------------------------
 	 * External actions of agents can be caught by defining methods that have a Term as return value.
-	 * This method can be called by a 2APL agents as follows: \@env(square(5), X).
-	 * X will now contain the return value, in this case 25.
 	 * @param agName The name of the agent that does the external action
-	 * @param num The num to calculate the square of, coded in an APLNum
+	 * @param aplNum The product id
 	 * @return The square of the input, coded in an APLNum
 	 */
-	public Term trackInventory(String agName, APLIdent aplNum) throws ExternalActionFailedException {
-		int num = Integer.parseInt(aplNum.toString());
-		
+	public Term trackInventory(String agName, APLNum aplNum) throws ExternalActionFailedException {
+		String num = aplNum.toString();
+		int threshold = 5;
+        boolean overTh = false;
 		log("env> agent " + agName + " wants to track inventory for product with id " + num);
         // TODO check inventory and give a response
+        String path = "src\\Inventory.csv";
+        List<String[]> csvBody = new ArrayList<>();
+        boolean found = false;
+        try (CSVReader reader = new CSVReader(new FileReader(path))) {
+            String[] nextLine;
+
+            // Read all rows at once and store them in csvBody
+            while ((nextLine = reader.readNext()) != null) {
+                csvBody.add(nextLine);
+            }
+
+            // Modify the quantity for the given product ID
+            for (int i = 1; i < csvBody.size(); i++) { // Start from 1 to skip the header
+                if (csvBody.get(i)[0].equals(num)) {
+                    int oldQuantity = Integer.parseInt(csvBody.get(i)[1]);
+                    csvBody.get(i)[1] = Integer.toString(oldQuantity-1);
+                    found = true;
+                    if(oldQuantity<threshold){
+                        overTh = true;
+                    }
+                    break;
+                }
+            }
+
+            if (!found) {
+                System.out.println("Product ID " + num + " not found.");
+            } else {
+                // Write the updated data back to the CSV file
+                try (CSVWriter writer = new CSVWriter(new FileWriter(path))) {
+                    writer.writeAll(csvBody);
+                    log("Quantity updated successfully.");
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (overTh){
+            APLFunction fun= new APLFunction("request", aplNum);
+            throwEvent(fun, agName);
+		    log("env> agent " + agName + " wants to request more products with id " + num);
+
+        }
 		return null;
 	}
 

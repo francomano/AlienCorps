@@ -19,9 +19,12 @@ pcrules:
   {
     adopta(sendproduct(ProductID));
     UpdateStatus(ProductID);
-    send(manifacturingManager, request, check(ProductID));
     @env(trackInventory(ProductID), L);
   } 
 
+  event(request(ProductID), env) <-true | 
+  {
+    send(manifacturingManager, request, check(ProductID));
+  }
 prrules:
     
