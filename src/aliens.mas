@@ -3,7 +3,7 @@
 	<parameter key="" value=""/>
     </environment>
     <agent name="resourceExtractorManager" file="resourceExtractorManager.2apl"/>
-    <agent name="manifacturingManager" file="manifacturingManager.2apl"/>
+    <agent name="manufacturingManager" file="manufacturingManager.2apl"/>
     <agent name="logisticManager" file="logisticManager.2apl"/>
     <agent name="tradeManager" file="tradeManager.2apl"/>
 </apaplmas>

@@ -24,7 +24,7 @@ pcrules:
 
   event(request(ProductID), env) <-true | 
   {
-    send(manifacturingManager, request, check(ProductID));
+    send(manufacturingManager, request, check(ProductID));
   }
 prrules:
     
