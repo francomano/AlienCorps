@@ -1,0 +1,37 @@
+beliefupdates: 
+    {stock(ResourceID, Amount)} Extract(ResourceID, Num) { stock(ResourceID, Amount+Num)}
+
+
+beliefs:
+
+
+goals:
+
+plans:
+
+
+pgrules:
+
+
+
+    explorePlanet(MARS) <- true |
+        {
+            @env( explorePlanet(), L);
+        }
+
+
+
+pcrules:
+
+    event(newresource(ResourceID, Amount), env) <- true |
+        {
+            Extract(ResourceID, Amount);
+        }
+
+    event(testExplore(MARS), env) <- true |
+        {
+            adopta(explorePlanet(MARS));
+        }
+
+
+prrules:
