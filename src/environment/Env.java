@@ -73,6 +73,9 @@ public class Env extends Environment implements ObsVectListener {
     private final boolean log = true;
     // private HashMap<String,Agent> agentmap = new HashMap<String,Agent>();
 
+    // resourceStock
+    private HashMap<Integer, Integer> resourceStock = new HashMap<Integer, Integer>();
+
     /* ---- ALL the stuff in the environment ----- */
 
     // list of agents (Agent)
@@ -161,9 +164,20 @@ public class Env extends Environment implements ObsVectListener {
         }
 
         if (agName.equals("resourceExtractorManager")) {
-            APLIdent planet = new APLIdent("MARS");
-            APLFunction event = new APLFunction("testExplore", planet);
-            throwEvent(event, agName);
+            // APLIdent planet = new APLIdent("MARS");
+            // APLFunction event = new APLFunction("testExplore", planet);
+            // throwEvent(event, agName);
+
+            // Initialize the resource stock
+            resourceStock.put(1, 10);
+            resourceStock.put(2, 20);
+            resourceStock.put(3, 30);
+            resourceStock.put(4, 40);
+
+            APLIdent resourceID = new APLIdent("1");
+            APLIdent region = new APLIdent("1");
+            APLFunction event_2 = new APLFunction("foundResource", resourceID, region);
+            throwEvent(event_2, agName);
         }
     }
 
@@ -273,12 +287,6 @@ public class Env extends Environment implements ObsVectListener {
         return null;
     }
 
-    public Term explorePlanet(String agName) throws ExternalActionFailedException {
-        log("env> agent " + agName + " wants to explore the planet");
-        // TODO explore planet
-        return null;
-    }
-
     public void negotiate(String agName, int prodID, int p) {
         String[] choises = { "yes", "no" };
         java.util.Random random = new java.util.Random();
@@ -297,5 +305,46 @@ public class Env extends Environment implements ObsVectListener {
             throwEvent(event, agName);
         }
 
+    }
+
+    // EXPLORE AGENT
+
+    public Term explorePlanet(String agName) throws ExternalActionFailedException {
+        log("env> agent " + agName + " is exploring the planet");
+        // Randomly send foundResource event, for a ResourceID and a Region
+        java.util.Random random = new java.util.Random();
+        if (random.nextBoolean()) {
+            int resID = random.nextInt(4) + 1;
+            int region = random.nextInt(4) + 1;
+            APLIdent resourceID = new APLIdent(Integer.toString(resID));
+            APLIdent regionID = new APLIdent(Integer.toString(region));
+            APLFunction event = new APLFunction("foundResource", resourceID, regionID);
+            log("env> agent " + agName + " found resource with id " + resID + " in region " + region);
+            throwEvent(event, agName);
+        } else {
+            log("env> agent " + agName + " did not find any resources");
+        }
+
+        return null;
+    }
+
+    public Term mineResource(String agName, APLNum resourceID, APLNum regionID) throws ExternalActionFailedException {
+        int resID = resourceID.toInt();
+        log("env> agent " + agName + " wants to mine resource with id " + resID);
+        // Randomly generate the quantity of the mined resource and add to resourceStock
+        java.util.Random random = new java.util.Random();
+        int quantity = random.nextInt(10) + 1;
+        resourceStock.put(resID, resourceStock.get(resID) + quantity);
+        log("env> agent " + agName + " mined " + quantity + " units of resource with id " + resID);
+        log("env> Total resource stock: " + resourceStock);
+
+        // Randomly 50% send exhaustedResource event
+        if (random.nextBoolean()) {
+            APLIdent resourceIDTerm = new APLIdent(Integer.toString(resID));
+            APLFunction event = new APLFunction("exhaustedResource", resourceIDTerm);
+            throwEvent(event, agName);
+        }
+
+        return null;
     }
 }

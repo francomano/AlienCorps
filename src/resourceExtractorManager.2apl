@@ -1,9 +1,11 @@
 beliefupdates: 
     {stock(ResourceID, Amount)} Extract(ResourceID, Num) { stock(ResourceID, Amount+Num)}
+    {availMiner} DeployMiners(Region) {miner(Region), not availMiner}
+    {miner(Region)} StopMiners(Region) {not miner(Region), availMiner}
 
 
 beliefs:
-
+    availMiner.
 
 goals:
 
@@ -19,6 +21,11 @@ pgrules:
             @env( explorePlanet(), L);
         }
 
+    mineResource(ResourceID) <- miner(Region) |
+        {
+            @env( mineResource(ResourceID, Region), L);
+        }
+
 
 
 pcrules:
@@ -31,6 +38,18 @@ pcrules:
     event(testExplore(MARS), env) <- true |
         {
             adopta(explorePlanet(MARS));
+        }
+
+    event(foundResource(ResourceID, Region), env) <- true  |
+        {
+            DeployMiners(Region);
+            adopta(mineResource(ResourceID));
+        }
+
+    event(exhaustedResource(ResourceID, Region), env) <- true  |
+        {
+            dropgoal(mineResource(ResourceID));
+            StopMiners(Region);
         }
 
 
