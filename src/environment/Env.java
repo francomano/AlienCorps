@@ -164,20 +164,20 @@ public class Env extends Environment implements ObsVectListener {
         }
 
         if (agName.equals("resourceExtractorManager")) {
-            // APLIdent planet = new APLIdent("MARS");
-            // APLFunction event = new APLFunction("testExplore", planet);
-            // throwEvent(event, agName);
+            APLIdent planet = new APLIdent("MARS");
+            APLFunction event = new APLFunction("deployExplorationDrones", planet);
+            throwEvent(event, agName);
 
             // Initialize the resource stock
-            resourceStock.put(1, 10);
-            resourceStock.put(2, 20);
-            resourceStock.put(3, 30);
-            resourceStock.put(4, 40);
+            resourceStock.put(1, 0);
+            resourceStock.put(2, 0);
+            resourceStock.put(3, 0);
+            resourceStock.put(4, 0);
 
-            APLIdent resourceID = new APLIdent("1");
-            APLIdent region = new APLIdent("1");
-            APLFunction event_2 = new APLFunction("foundResource", resourceID, region);
-            throwEvent(event_2, agName);
+            // APLIdent resourceID = new APLIdent("1");
+            // APLIdent region = new APLIdent("1");
+            // APLFunction event_2 = new APLFunction("foundResource", resourceID, region);
+            // throwEvent(event_2, agName);
         }
     }
 
@@ -330,7 +330,7 @@ public class Env extends Environment implements ObsVectListener {
 
     public Term mineResource(String agName, APLNum resourceID, APLNum regionID) throws ExternalActionFailedException {
         int resID = resourceID.toInt();
-        log("env> agent " + agName + " wants to mine resource with id " + resID);
+        log("env> agent " + agName + " wants to mine resource with id " + resID + " in region " + regionID);
         // Randomly generate the quantity of the mined resource and add to resourceStock
         java.util.Random random = new java.util.Random();
         int quantity = random.nextInt(10) + 1;
@@ -340,8 +340,9 @@ public class Env extends Environment implements ObsVectListener {
 
         // Randomly 50% send exhaustedResource event
         if (random.nextBoolean()) {
+            log("env> agent " + agName + " exhausted the resource with id " + resID + " in region " + regionID);
             APLIdent resourceIDTerm = new APLIdent(Integer.toString(resID));
-            APLFunction event = new APLFunction("exhaustedResource", resourceIDTerm);
+            APLFunction event = new APLFunction("exhaustedResource", resourceIDTerm, regionID);
             throwEvent(event, agName);
         }
 

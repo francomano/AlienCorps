@@ -1,8 +1,9 @@
 beliefupdates: 
-    {stock(ResourceID, Amount)} Extract(ResourceID, Num) { stock(ResourceID, Amount+Num)}
     {availMiner} DeployMiners(Region) {miner(Region), not availMiner}
     {miner(Region)} StopMiners(Region) {not miner(Region), availMiner}
 
+    {} FoundResource(ResourceID, Region) {resource(ResourceID, Region)}
+    {} ExhaustedResource(ResourceID, Region) {not resource(ResourceID, Region)}
 
 beliefs:
     availMiner.
@@ -21,35 +22,57 @@ pgrules:
             @env( explorePlanet(), L);
         }
 
-    mineResource(ResourceID) <- miner(Region) |
+    lookResource(ResourceID) <- explorePlanet(MARS) |
+        {
+            @env( explorePlanet(), L);
+        }
+
+    mineResource(ResourceID) <- miner(Region) and resource(ResourceID, Region) |
         {
             @env( mineResource(ResourceID, Region), L);
         }
+
+    mineResource(ResourceID) <- resource(ResourceID, Region) and availMiner |
+        {
+            DeployMiners(Region);
+        }
+
+    <- miner(Region) and not resource(_, Region) |
+        {
+            StopMiners(Region);
+        }
+
 
 
 
 pcrules:
 
-    event(newresource(ResourceID, Amount), env) <- true |
-        {
-            Extract(ResourceID, Amount);
-        }
-
-    event(testExplore(MARS), env) <- true |
+    event(deployExplorationDrones(MARS), env) <- true |
         {
             adopta(explorePlanet(MARS));
+            adopta(extractResources);
         }
 
     event(foundResource(ResourceID, Region), env) <- true  |
         {
-            DeployMiners(Region);
+            FoundResource(ResourceID, Region);
             adopta(mineResource(ResourceID));
         }
 
     event(exhaustedResource(ResourceID, Region), env) <- true  |
         {
+            ExhaustedResource(ResourceID, Region);
             dropgoal(mineResource(ResourceID));
-            StopMiners(Region);
+        }
+
+    message( manufacturingManager, request, La, On, addPriority(ResourceID)) <- true |
+        {
+            adopta(priorityResource(ResourceID));
+        }
+    
+    message( manufacturingManager, inform, La, On, removePriority(ResourceID)) <- true |
+        {
+            dropgoal(priorityResource(ResourceID));
         }
 
 
