@@ -5,10 +5,17 @@ beliefupdates:
     {} FoundResource(ResourceID, Region) {resource(ResourceID, Region)}
     {} ExhaustedResource(ResourceID, Region) {not resource(ResourceID, Region)}
 
+    {not ispriority} AddPriorityResource(ResourceID) {priority(ResourceID), ispriority}
+    {priority(ResourceID)} RemovePriorityResource(ResourceID) {not priority(ResourceID), not ispriority}
+
 beliefs:
     availMiner.
 
 goals:
+    explorePlanet.
+    extractResources.
+
+
 
 plans:
 
@@ -17,14 +24,14 @@ pgrules:
 
 
 
-    explorePlanet(MARS) <- true |
+    explorePlanet <- not ispriority |
         {
             @env( explorePlanet(), L);
         }
 
-    lookResource(ResourceID) <- explorePlanet(MARS) |
+    explorePlanet <- priority(ResourceID) |
         {
-            @env( explorePlanet(), L);
+            @env( lookForResource(ResourceID), L);
         }
 
     mineResource(ResourceID) <- miner(Region) and resource(ResourceID, Region) |
@@ -47,12 +54,6 @@ pgrules:
 
 pcrules:
 
-    event(deployExplorationDrones(MARS), env) <- true |
-        {
-            adopta(explorePlanet(MARS));
-            adopta(extractResources);
-        }
-
     event(foundResource(ResourceID, Region), env) <- true  |
         {
             FoundResource(ResourceID, Region);
@@ -67,12 +68,22 @@ pcrules:
 
     message( manufacturingManager, request, La, On, addPriority(ResourceID)) <- true |
         {
-            adopta(priorityResource(ResourceID));
+            AddPriorityResource(ResourceID);
         }
     
     message( manufacturingManager, inform, La, On, removePriority(ResourceID)) <- true |
         {
-            dropgoal(priorityResource(ResourceID));
+            RemovePriorityResource(ResourceID);
+        }
+
+    event( addPriority(ResourceID), env) <- true |
+        {
+            AddPriorityResource(ResourceID);
+        }
+
+    event( extractedQuantity(ResourceID, Quantity), env) <- priority(ResourceID) |
+        {
+            send(manufacturingManager, inform, extracted(ResourceID, Quantity));
         }
 
 

@@ -164,9 +164,9 @@ public class Env extends Environment implements ObsVectListener {
         }
 
         if (agName.equals("resourceExtractorManager")) {
-            APLIdent planet = new APLIdent("MARS");
-            APLFunction event = new APLFunction("deployExplorationDrones", planet);
-            throwEvent(event, agName);
+            // APLIdent planet = new APLIdent("MARS");
+            // APLFunction event = new APLFunction("deployExplorationDrones", planet);
+            // throwEvent(event, agName);
 
             // Initialize the resource stock
             resourceStock.put(1, 0);
@@ -175,8 +175,8 @@ public class Env extends Environment implements ObsVectListener {
             resourceStock.put(4, 0);
 
             // APLIdent resourceID = new APLIdent("1");
-            // APLIdent region = new APLIdent("1");
-            // APLFunction event_2 = new APLFunction("foundResource", resourceID, region);
+            // // APLIdent region = new APLIdent("1");
+            // APLFunction event_2 = new APLFunction("addPriority", resourceID);
             // throwEvent(event_2, agName);
         }
     }
@@ -311,18 +311,35 @@ public class Env extends Environment implements ObsVectListener {
 
     public Term explorePlanet(String agName) throws ExternalActionFailedException {
         log("env> agent " + agName + " is exploring the planet");
-        // Randomly send foundResource event, for a ResourceID and a Region
+        // Randomly 20% send foundResource event, for a ResourceID and a Region
         java.util.Random random = new java.util.Random();
-        if (random.nextBoolean()) {
+        if (random.nextInt(100) < 10) {
             int resID = random.nextInt(4) + 1;
             int region = random.nextInt(4) + 1;
-            APLIdent resourceID = new APLIdent(Integer.toString(resID));
+            APLIdent resourceIDTerm = new APLIdent(Integer.toString(resID));
             APLIdent regionID = new APLIdent(Integer.toString(region));
-            APLFunction event = new APLFunction("foundResource", resourceID, regionID);
+            APLFunction event = new APLFunction("foundResource", resourceIDTerm, regionID);
             log("env> agent " + agName + " found resource with id " + resID + " in region " + region);
             throwEvent(event, agName);
         } else {
             log("env> agent " + agName + " did not find any resources");
+        }
+        return null;
+    }
+
+    public Term lookForResource(String agName, APLNum resourceID) throws ExternalActionFailedException {
+        int resID = resourceID.toInt();
+        log("env> agent " + agName + " wants to look for resource with id " + resID);
+        java.util.Random random = new java.util.Random();
+        if (random.nextInt(100) < 10) {
+            int region = random.nextInt(4) + 1;
+            APLIdent resourceIDTerm = new APLIdent(Integer.toString(resID));
+            APLIdent regionID = new APLIdent(Integer.toString(region));
+            APLFunction event = new APLFunction("foundResource", resourceIDTerm, regionID);
+            log("env> agent " + agName + " found resource with id " + resID + " in region " + region);
+            throwEvent(event, agName);
+        } else {
+            log("env> agent " + agName + " did not find resource with id " + resID);
         }
 
         return null;
@@ -345,6 +362,11 @@ public class Env extends Environment implements ObsVectListener {
             APLFunction event = new APLFunction("exhaustedResource", resourceIDTerm, regionID);
             throwEvent(event, agName);
         }
+
+        // Send the mined quantity to the resource manager
+        APLNum minedQuantity = new APLNum(quantity);
+        APLFunction event = new APLFunction("extractedQuantity", resourceID, minedQuantity);
+        throwEvent(event, agName);
 
         return null;
     }
