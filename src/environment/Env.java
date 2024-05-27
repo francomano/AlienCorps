@@ -180,7 +180,7 @@ public class Env extends Environment implements ObsVectListener {
 
         // Display product options
         for (int i = 0; i < products.length; i++) {
-            System.out.println((i + 1) + ". " + "Product" + products[i]);
+            System.out.println((i + 1) + ". " + "Product " + products[i]);
         }
         java.util.Random random = new java.util.Random();
         int random_choice = random.nextInt(products.length);
