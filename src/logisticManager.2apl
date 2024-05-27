@@ -1,5 +1,5 @@
 beliefupdates: 
-  { not sold(ProductID) } UpdateStatus(ProductID) { sold(ProductID) }
+  { not sendproduct(ProductID) } ProductSent(ProductID) {  sendproduct(ProductID) }
   
 beliefs:
     
@@ -8,17 +8,16 @@ goals:
 plans:
 
 pgrules:
-  sendproduct(ProductID) <- sold(ProductID) |
+  sendproduct(ProductID) <- true |
   { 
     @env( shipProd( ProductID ), L);
-    +sendproduct(ProductID);
+    ProductSent(ProductID);
   }
 
 pcrules:
   message( tradeManager, inform, La, On, sold(ProductID)) <- true |
   if B(not sendproduct(ProductID)){
     adopta(sendproduct(ProductID));
-    UpdateStatus(ProductID);
     @env(trackInventory(ProductID), L);
   }
   else{

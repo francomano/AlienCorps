@@ -235,8 +235,6 @@ public class Env extends Environment implements ObsVectListener {
      * @param agName The name of the agent that does the external action
      * 
      * @param aplNum The product id
-     * 
-     * @return The square of the input, coded in an APLNum
      */
     public Term trackInventory(String agName, APLNum aplNum) throws ExternalActionFailedException {
         String num = aplNum.toString();
@@ -244,7 +242,7 @@ public class Env extends Environment implements ObsVectListener {
         boolean overTh = false;
         log("env> agent " + agName + " wants to track inventory for product with id " + num);
         // TODO check inventory and give a response
-        String path = "Inventory.csv";
+        String path = "src\\Inventory.csv";
         List<String[]> csvBody = new ArrayList<>();
         boolean found = false;
         try (CSVReader reader = new CSVReader(new FileReader(path))) {
@@ -294,11 +292,9 @@ public class Env extends Environment implements ObsVectListener {
         int num = aplNum.toInt();
 
         log("env> agent " + agName + " wants to ship product with id " + num);
-        // TODO ship product
-
 
         request("tradeManager"); //at the end of the ship, a new order from the customers will be sent
-        return null;
+        return new APLNum(new Integer(1));
     }
 
     private int findPriceFromCSV(int prodID, String path) {
