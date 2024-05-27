@@ -16,11 +16,16 @@ pgrules:
 
 pcrules:
   message( tradeManager, inform, La, On, sold(ProductID)) <- true |
-  {
+  if B(not sendproduct(ProductID)){
     adopta(sendproduct(ProductID));
     UpdateStatus(ProductID);
     @env(trackInventory(ProductID), L);
-  } 
+  }
+  else{
+    -sendproduct(ProductID);
+    adopta(sendproduct(ProductID));
+    @env(trackInventory(ProductID), L);
+  }
 
   event(request(ProductID), env) <-true | 
   {

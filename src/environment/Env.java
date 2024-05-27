@@ -1,3 +1,5 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -5,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -133,34 +136,9 @@ public class Env extends Environment implements ObsVectListener {
         // parameter:
         // throwEvent(event);
 
+        
         if (agName.equals("tradeManager")) {
-            // todo interface with user to request product
-            String[] products = { "1", "2", "3", "4" };
-
-            // Prompt the user to select a product
-            log("Please select a product:");
-
-            // Display product options
-            for (int i = 0; i < products.length; i++) {
-                System.out.println((i + 1) + ". " + "Product" + products[i]);
-            }
-
-            // Read user input
-            Scanner scanner = new Scanner(System.in);
-            int choice = scanner.nextInt();
-
-            // Validate user input
-            if (choice >= 1 && choice <= products.length) {
-                String selectedProduct = products[choice - 1];
-                System.out.println("You have selected: " + selectedProduct);
-                // Call your method to handle the selected product (e.g.,
-                // chooseProduct(selectedProduct))
-                chooseProduct(selectedProduct, agName);
-            } else {
-                System.out.println("Invalid selection. Please select a number between 1 and " + products.length);
-            }
-
-            scanner.close();
+            request(agName);
         }
 
         if (agName.equals("resourceExtractorManager")) {
@@ -179,6 +157,48 @@ public class Env extends Environment implements ObsVectListener {
             // APLFunction event_2 = new APLFunction("addPriority", resourceID);
             // throwEvent(event_2, agName);
         }
+    }
+
+    private void request(String agName){
+        // todo interface with user to request product
+        //String[] products = { "1", "2", "3", "4" };
+        String[] products = {
+            "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+            "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
+            "21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
+            "31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
+            "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
+            "51", "52", "53", "54", "55", "56", "57", "58", "59", "60",
+            "61", "62", "63", "64", "65", "66", "67", "68", "69", "70",
+            "71", "72", "73", "74", "75", "76", "77", "78", "79", "80",
+            "81", "82", "83", "84", "85", "86", "87", "88", "89", "90",
+            "91", "92", "93", "94", "95", "96", "97", "98", "99"
+        };
+
+        // Prompt the user to select a product
+        log("Please select a product:");
+
+        // Display product options
+        for (int i = 0; i < products.length; i++) {
+            System.out.println((i + 1) + ". " + "Product" + products[i]);
+        }
+        java.util.Random random = new java.util.Random();
+        int random_choice = random.nextInt(products.length);
+        String choice = products[random_choice];
+        int choiceInt = Integer.parseInt(choice);
+        // Validate user input
+        if (choiceInt >= 1 && choiceInt <= products.length) {
+            String selectedProduct = products[choiceInt - 1];
+            System.out.println("You have selected: " + selectedProduct);
+            // Call your method to handle the selected product (e.g.,
+            // chooseProduct(selectedProduct))
+            startNegotiation(choiceInt);
+            chooseProduct(selectedProduct, agName);
+        } else {
+            System.out.println("Invalid selection. Please select a number between 1 and " + products.length);
+        }
+
+     
     }
 
     private void chooseProduct(String productID, String agName) {
@@ -224,7 +244,7 @@ public class Env extends Environment implements ObsVectListener {
         boolean overTh = false;
         log("env> agent " + agName + " wants to track inventory for product with id " + num);
         // TODO check inventory and give a response
-        String path = "src/Inventory.csv";
+        String path = "Inventory.csv";
         List<String[]> csvBody = new ArrayList<>();
         boolean found = false;
         try (CSVReader reader = new CSVReader(new FileReader(path))) {
@@ -275,14 +295,43 @@ public class Env extends Environment implements ObsVectListener {
 
         log("env> agent " + agName + " wants to ship product with id " + num);
         // TODO ship product
+
+
+        request("tradeManager"); //at the end of the ship, a new order from the customers will be sent
         return null;
     }
 
-    public Term sendPrice(String agName, APLNum id, APLNum price) throws ExternalActionFailedException {
+    private int findPriceFromCSV(int prodID, String path) {
+        int price = -1;
+        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
+            String line;
+            String lastMatchingLine = null;
+
+            while ((line = reader.readLine()) != null) {
+                String[] columns = line.split(",");
+                if (columns.length >= 2 && Integer.parseInt(columns[0]) == prodID) {
+                    lastMatchingLine = line;
+                }
+            }
+
+            if (lastMatchingLine != null) {
+                String[] columns = lastMatchingLine.split(",");
+                price = Integer.parseInt(columns[1]);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return price;
+    }
+    
+    public Term sendPrice(String agName, APLNum id) throws ExternalActionFailedException {
         int prodID = id.toInt();
-        int p = price.toInt();
-        p += 10;
+        String path = "Negotiation_history.csv";
+        int p = findPriceFromCSV(prodID, path);
+        p+=10; //simple strategy
         log("env> agent " + agName + "proposes the price of: " + p + " for the product with id: " + prodID);
+        update_price(prodID, p);
         negotiate(agName, prodID, p);
         return null;
     }
@@ -295,16 +344,38 @@ public class Env extends Environment implements ObsVectListener {
         log("Accept the price - Customer decision: " + choise);
         if (choise.equals("yes")) {
             APLNum productIDTerm = new APLNum(prodID);
-            APLNum newprice = new APLNum(p);
-            APLFunction event = new APLFunction("accept", productIDTerm, newprice);
+            APLFunction event = new APLFunction("accept", productIDTerm);
             throwEvent(event, agName);
         } else {
-            APLNum productIDTerm = new APLNum(prodID);
-            APLNum newprice = new APLNum(p / 2);
-            APLFunction event = new APLFunction("newprice", productIDTerm, newprice);
-            throwEvent(event, agName);
+            p /=2;
+            update_price(prodID, p);
         }
 
+    }
+    public void startNegotiation(int prodID) {
+        String path = "Negotiation_history.csv";
+        log("IN");
+        int price = 90;
+        // Write to the CSV file
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(path, true))) {
+            writer.write(prodID + "," + price);
+            writer.newLine();
+            writer.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+    }
+
+    public void update_price(int prodID, int price){
+        String path = "Negotiation_history.csv";
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(path, true))) {
+            writer.write(prodID + "," + price);
+            writer.newLine();
+            writer.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // EXPLORE AGENT
