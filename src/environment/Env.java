@@ -541,13 +541,15 @@ public class Env extends Environment implements ObsVectListener {
         return null;
     }
     
-    public void unregisterFromDatabase(Map<Integer, Integer> database, APLNum ProductID, String Type) throws ExternalActionFailedException {
+    public void unregisterFromDatabase(Map<Integer, Integer> database, APLNum ProductID, String Type)
+            throws ExternalActionFailedException {
+        log("env> Unregistering data from database: " + database);
         if (Type == "C") {
             Map<Integer, Integer> components = checkProductFormula(ProductID);
             Set<Integer> keys = components.keySet();
             for (Integer key : keys) {
                 if (!database.containsKey(key)) {
-                    database.put(key, database.get(key));
+                    database.put(key, 0);
                 }
                 else {
                     database.put(key, database.get(key) - components.get(key));
@@ -556,7 +558,7 @@ public class Env extends Environment implements ObsVectListener {
         } else {
             int prodID = ProductID.toInt();
             if (!database.containsKey(prodID)) {
-                database.put(prodID, database.get(1));
+                database.put(prodID, 0);
             }
             else {
                 database.put(prodID, database.get(prodID) - 1);
@@ -564,13 +566,15 @@ public class Env extends Environment implements ObsVectListener {
         }
     }
 
-    public void registerToDatabase(Map<Integer, Integer> database, APLNum ProductID, String Type) throws ExternalActionFailedException {
+    public void registerToDatabase(Map<Integer, Integer> database, APLNum ProductID, String Type)
+            throws ExternalActionFailedException {
+        log("env> Registering data from database: " + database);
         if (Type == "C") {
             Map<Integer, Integer> components = checkProductFormula(ProductID);
             Set<Integer> keys = components.keySet();
             for (Integer key : keys) {
                 if (!database.containsKey(key)) {
-                    database.put(key, database.get(key));
+                    database.put(key, components.get(key));
                 }
                 else {
                     database.put(key, database.get(key) + components.get(key));
@@ -579,7 +583,7 @@ public class Env extends Environment implements ObsVectListener {
         } else {
             int prodID = ProductID.toInt();
             if (!database.containsKey(prodID)) {
-                database.put(prodID, database.get(1));
+                database.put(prodID, 1);
             }
             else {
                 database.put(prodID, database.get(prodID) + 1);
