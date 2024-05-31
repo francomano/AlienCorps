@@ -24,7 +24,6 @@ pgrules:
 pcrules:
     message( resourceExtractorManager, inform, La, On, extracted(ResourceID, Quantity)) <- true |
         {
-            @env(processMaterial(ResourceID, Quantity), L);
             dropgoal(informPriority(ResourceID));
         }
 
@@ -35,7 +34,6 @@ pcrules:
     
      event( manageResourceLack(ResourceID), env) <- true |
         {
-           ManageResourceLack(ResourceID);
            adopta(informPriority(ResourceID));
         }
 

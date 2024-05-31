@@ -54,10 +54,10 @@ pcrules:
 
   event(request(ProductID), env) <-true | 
   {
+    send(manufacturingManager, request, check(ProductID));
     if(B(stocked(ProductID))) then
       {
         ProductOutOfStock(ProductID);
-        send(manufacturingManager, request, check(ProductID));
       }
   }
 
