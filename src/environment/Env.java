@@ -329,7 +329,7 @@ public class Env extends Environment implements ObsVectListener {
     
     public Term sendPrice(String agName, APLNum id) throws ExternalActionFailedException {
         int prodID = id.toInt();
-        String path = "Negotiation_history.csv";
+        String path = "src\\Negotiation_history.csv";
         int p = findPriceFromCSV(prodID, path);
         p+=10; //simple strategy
         log("env> agent " + agName + "proposes the price of: " + p + " for the product with id: " + prodID);
@@ -355,7 +355,7 @@ public class Env extends Environment implements ObsVectListener {
 
     }
     public void startNegotiation(int prodID) {
-        String path = "Negotiation_history.csv";
+        String path = "src\\Negotiation_history.csv";
         log("IN");
         int price = 90;
         // Write to the CSV file
@@ -370,7 +370,7 @@ public class Env extends Environment implements ObsVectListener {
     }
 
     public void update_price(int prodID, int price){
-        String path = "Negotiation_history.csv";
+        String path = "src\\Negotiation_history.csv";
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(path, true))) {
             writer.write(prodID + "," + price);
             writer.newLine();
