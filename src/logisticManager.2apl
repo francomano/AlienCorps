@@ -23,32 +23,50 @@ pcrules:
     @env(trackInventory(ProductID), L);
     if( B(L = [ProductID])) then 
     {
-      ProductAvail(ProductID);
+      if(B(not stocked(ProductID))) then
+      {
+        ProductAvail(ProductID);
+      }
     }else{
-      ProductOutOfStock(ProductID);
+      if(B(stocked(ProductID))) then
+      {
+        ProductOutOfStock(ProductID);
+      }
     }
   }
   else{
     -sendproduct(ProductID);
     adopta(sendproduct(ProductID));
     @env(trackInventory(ProductID), L);
-    if( B(L = [ProductID])) then 
+    if(B(L = [ProductID])) then 
     {
-      ProductAvail(ProductID);
+      if(B(not stocked(ProductID))) then
+      {
+        ProductAvail(ProductID);
+      }
     }else{
-      ProductOutOfStock(ProductID);
+      if(B(stocked(ProductID))) then
+      {
+        ProductOutOfStock(ProductID);
+      }
     }
   }
 
   event(request(ProductID), env) <-true | 
   {
-    ProductOutOfStock(ProductID);
-    send(manufacturingManager, request, check(ProductID));
+    if(B(stocked(ProductID))) then
+      {
+        ProductOutOfStock(ProductID);
+        send(manufacturingManager, request, check(ProductID));
+      }
   }
 
   message( manufacturingManager, inform, La, On, delivered(ProductID)) <- true | 
   {
-    ProductAvail(ProductID);
+    if(B(not stocked(ProductID))) then
+      {
+        ProductAvail(ProductID);
+      }
   }
 
 prrules:

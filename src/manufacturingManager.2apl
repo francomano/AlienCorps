@@ -7,7 +7,6 @@ beliefs:
 
 
 goals:
-    askForResource.
 
 plans:
 
@@ -23,7 +22,7 @@ pgrules:
         }
 
 pcrules:
-    message( resourceExtractorManager, inform, La, On, check(ResourceID, Quantity)) <- true |
+    message( resourceExtractorManager, inform, La, On, extracted(ResourceID, Quantity)) <- true |
         {
             @env(processMaterial(ResourceID, Quantity), L);
             dropgoal(informPriority(ResourceID));

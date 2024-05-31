@@ -247,7 +247,7 @@ public class Env extends Environment implements ObsVectListener {
         boolean overTh = false;
         log("env> agent " + agName + " wants to track inventory for product with id " + num);
         // TODO check inventory and give a response
-        String path = "src\\Inventory.csv";
+        String path = "src/Inventory.csv";
         List<String[]> csvBody = new ArrayList<>();
         boolean found = false;
         try (CSVReader reader = new CSVReader(new FileReader(path))) {
@@ -329,7 +329,7 @@ public class Env extends Environment implements ObsVectListener {
     
     public Term sendPrice(String agName, APLNum id) throws ExternalActionFailedException {
         int prodID = id.toInt();
-        String path = "src\\Negotiation_history.csv";
+        String path = "src/Negotiation_history.csv";
         int p = findPriceFromCSV(prodID, path);
         p+=10; //simple strategy
         log("env> agent " + agName + "proposes the price of: " + p + " for the product with id: " + prodID);
@@ -355,7 +355,7 @@ public class Env extends Environment implements ObsVectListener {
 
     }
     public void startNegotiation(int prodID) {
-        String path = "src\\Negotiation_history.csv";
+        String path = "src/Negotiation_history.csv";
         log("IN");
         int price = 90;
         // Write to the CSV file
@@ -370,7 +370,7 @@ public class Env extends Environment implements ObsVectListener {
     }
 
     public void update_price(int prodID, int price){
-        String path = "src\\Negotiation_history.csv";
+        String path = "src/Negotiation_history.csv";
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(path, true))) {
             writer.write(prodID + "," + price);
             writer.newLine();
@@ -614,7 +614,6 @@ public class Env extends Environment implements ObsVectListener {
     }
 
     public Term manageProductManufactureRequest(String agName, APLNum ProductID) throws ExternalActionFailedException {
-        
         Boolean enoughComponents = checkResourcesAvailability(ProductID);
 
         if (!enoughComponents) {
@@ -633,7 +632,7 @@ public class Env extends Environment implements ObsVectListener {
     
     public Map<Integer, Integer> checkProductFormula(APLNum ProductId) throws ExternalActionFailedException {
         String num = ProductId.toString();
-        String path = "src\\Formulas.csv";
+        String path = "src/Formulas.csv";
         List<String[]> csvBody = new ArrayList<>();
         Map<Integer, Integer> components = new HashMap<>();
 
@@ -671,7 +670,7 @@ public class Env extends Environment implements ObsVectListener {
     public Boolean deliverLogistics(APLNum ProductID) throws ExternalActionFailedException {
         String num = ProductID.toString();
        
-        String path = "src\\Inventory.csv";
+        String path = "src/Inventory.csv";
         List<String[]> csvBody = new ArrayList<>();
         boolean found = false;
         try (CSVReader reader = new CSVReader(new FileReader(path))) {
