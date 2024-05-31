@@ -1,0 +1,72 @@
+beliefupdates:
+  {not ispriority} AskForResource(ResourceID) {priority(ResourceID), ispriority}
+  {not materialAssessed(ResourceID)} AssessMaterialQuality(ResourceID) {materialAssessed(ResourceID)}
+  {not islacking(ResourceID)} ManageResourceLack(ResourceID) {islacking(ResourceID)}
+
+beliefs:
+
+
+goals:
+    askForResource.
+
+plans:
+
+pgrules:
+    manufactureProducts <- true |
+        {
+            @env( continuousManufacture(), L);
+        }
+
+    informPriority(ResourceID) <- islacking(ResourceID) |
+        {
+           send(resourceExtractorManager, request, addPriority(ResourceID));
+        }
+
+pcrules:
+    message( resourceExtractorManager, inform, La, On, check(ResourceID, Quantity)) <- true |
+        {
+            @env(processMaterial(ResourceID, Quantity), L);
+            dropgoal(informPriority(ResourceID));
+        }
+
+    message( logisticManager, request, La, On, check(ProductID)) <- true |
+        {
+            @env(manageProductManufactureRequest(ProductID), L);
+        }
+    
+     event( manageResourceLack(ResourceID), env) <- true |
+        {
+           ManageResourceLack(ResourceID);
+           adopta(informPriority(ResourceID));
+        }
+
+    event( continuousManufacture(ProductID), env) <- true |
+        {
+           @env(manageProductManufactureRequest(ProductID), L);
+        }
+
+    event( resourcesQualityCheck(ProductID), env) <- true |
+        {
+           @env(resourcesQualityCheck(ProductID), L);
+        }
+
+    event( componentsManufacture(ProductID), env) <- true |
+        {
+           @env(componentsManufacturing(ProductID), L);
+        }
+
+    event( assembleProduct(ProductID), env) <- true |
+        {
+           @env(assembleProduct(ProductID), L);
+        }
+
+    event( finalProductQualityCheck(ProductID), env) <- true |
+        {
+           @env(finalProductQualityCheck(ProductID), L);
+        }
+
+    event(request(ProductID), env) <-true | 
+        {
+            send(logisticManager, inform, delivered(ProductID));
+        }
+prrules:
