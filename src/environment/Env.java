@@ -3,10 +3,13 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Collection;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
@@ -78,6 +81,13 @@ public class Env extends Environment implements ObsVectListener {
 
     // resourceStock
     private HashMap<Integer, Integer> resourceStock = new HashMap<Integer, Integer>();
+
+    // processedResources
+    private HashMap<Integer, Integer> processedResources = new HashMap<Integer, Integer>();
+    // manufaturedComponents
+    private HashMap<Integer, Integer> manufacturedComponents = new HashMap<Integer, Integer>();
+    // aasembledProducts
+    private HashMap<Integer, Integer> assembledProducts = new HashMap<Integer, Integer>();
 
     /* ---- ALL the stuff in the environment ----- */
 
@@ -437,4 +447,266 @@ public class Env extends Environment implements ObsVectListener {
 
         return null;
     }
+
+    public Term continuousManufacture(String agName) throws ExternalActionFailedException {
+        log("> Starting Continuous Manufacture");
+        java.util.Random random = new java.util.Random();
+        int prodID = random.nextInt(100) + 1;
+        APLNum productID = new APLNum(prodID);
+        APLFunction event = new APLFunction("continuousManufacture", productID);
+        throwEvent(event, agName);
+        log("env> agent " + agName + " a continuous manufacture request for product: " + prodID + "----------->");
+        return null;
+
+    }
+
+    public Term resourcesQualityCheck(String agName, APLNum ProductID) throws ExternalActionFailedException {
+        // Randomly 80% resource quality test passed event for resources of ProductID
+        java.util.Random random = new java.util.Random();
+        Map<Integer, Integer> components = checkProductFormula(ProductID);
+        
+
+        if (random.nextInt(100) < 90) {
+            unregisterFromDatabase(resourceStock, ProductID, "C");
+            registerToDatabase(processedResources, ProductID, "C");
+            APLFunction event = new APLFunction("componentsManufacture", ProductID);
+            log("env> agent " + agName + " resource quality evaluation for product: " + ProductID
+                    + " --->  Passed  - Continuing manufacturing process ");
+            throwEvent(event, agName);
+        } else {
+            Boolean enoughComponents = checkResourcesAvailability(ProductID);
+            if (enoughComponents) {
+                unregisterFromDatabase(resourceStock, ProductID, "C");
+                registerToDatabase(processedResources, ProductID, "C");
+                APLFunction event = new APLFunction("componentsManufacture", ProductID);
+                log("env> agent " + agName + " resource quality evaluation for product: " + ProductID
+                        + " --->  Failed  - Still available good quality rerources - Continuing manufacturing process.");
+                throwEvent(event, agName);
+                log("env> agent " + agName + " did not find any resources");
+            } else {
+                unregisterFromDatabase(processedResources, ProductID, "C");
+                log("env> agent " + agName + " resource quality evaluation for product: " + ProductID
+                        + " --->  Failed  - Not enough resources to continue manufacturing process - Notifyied priority for this resources - Requeuing product manufacture");
+                APLFunction event = new APLFunction("continuousManufacture", ProductID);
+                throwEvent(event, agName);
+            }
+        }
+
+        return null;
+    }
+    
+    public Term componentsManufacturing(String agName, APLNum ProductID) throws ExternalActionFailedException {
+        unregisterFromDatabase(processedResources, ProductID, "C");
+        registerToDatabase(manufacturedComponents, ProductID, "C");
+
+        log("env> agent " + agName + ", already manufactured components for product: " + ProductID);
+        APLFunction event = new APLFunction("assembleProduct", ProductID);
+        throwEvent(event, agName);
+
+        return null;
+    }
+
+    public Term assembleProduct(String agName, APLNum ProductID) throws ExternalActionFailedException {
+        unregisterFromDatabase(manufacturedComponents, ProductID, "C");
+        registerToDatabase(assembledProducts, ProductID, "P");
+
+        log("env> agent " + agName + ", new product manufactured: " + ProductID);
+        APLFunction event = new APLFunction("finalProductQualityCheck", ProductID);
+        throwEvent(event, agName);
+
+        return null;
+    }
+
+    public Term finalProductQualityCheck(String agName, APLNum ProductID) throws ExternalActionFailedException {
+        
+        java.util.Random random = new java.util.Random();
+        Map<Integer, Integer> components = checkProductFormula(ProductID);
+        
+        // Randomly 90% resource quality test passed event for ProductID
+        if (random.nextInt(100) < 90) {
+            unregisterFromDatabase(assembledProducts, ProductID, "P");
+            deliverLogistics(ProductID);
+            APLFunction event = new APLFunction("deliverToLogistics", ProductID);
+            log("env> agent " + agName + " final product quality evaluation for product: " + ProductID
+                    + " --->  Passed  - Delibering to agent logisticsManager.");
+            throwEvent(event, agName);
+        } else {
+                log("env> agent " + agName + " final product quality evaluation for product: " + ProductID
+                        + " --->  Failed - Requeuing product manufacture");
+                APLFunction event = new APLFunction("continuousManufacture", ProductID);
+                throwEvent(event, agName);
+          
+        }
+
+        return null;
+    }
+    
+    public void unregisterFromDatabase(Map<Integer, Integer> database, APLNum ProductID, String Type) throws ExternalActionFailedException {
+        if (Type == "C") {
+            Map<Integer, Integer> components = checkProductFormula(ProductID);
+            Set<Integer> keys = components.keySet();
+            for (Integer key : keys) {
+                if (!database.containsKey(key)) {
+                    database.put(key, database.get(key));
+                }
+                else {
+                    database.put(key, database.get(key) - components.get(key));
+                }
+            }
+        } else {
+            int prodID = ProductID.toInt();
+            if (!database.containsKey(prodID)) {
+                database.put(prodID, database.get(1));
+            }
+            else {
+                database.put(prodID, database.get(prodID) - 1);
+            }
+        }
+    }
+
+    public void registerToDatabase(Map<Integer, Integer> database, APLNum ProductID, String Type) throws ExternalActionFailedException {
+        if (Type == "C") {
+            Map<Integer, Integer> components = checkProductFormula(ProductID);
+            Set<Integer> keys = components.keySet();
+            for (Integer key : keys) {
+                if (!database.containsKey(key)) {
+                    database.put(key, database.get(key));
+                }
+                else {
+                    database.put(key, database.get(key) + components.get(key));
+                }
+            }
+        } else {
+            int prodID = ProductID.toInt();
+            if (!database.containsKey(prodID)) {
+                database.put(prodID, database.get(1));
+            }
+            else {
+                database.put(prodID, database.get(prodID) + 1);
+            }
+        }
+    }
+    
+    
+    public Boolean checkResourcesAvailability(APLNum ProductID) throws ExternalActionFailedException {
+        boolean enoughComponents = true;
+        
+        Map<Integer, Integer> components = checkProductFormula(ProductID);
+        Set<Integer> keys = components.keySet();
+
+        for (Integer key : keys) {
+            if (resourceStock.get(key) < components.get(key)) {
+                enoughComponents = false;
+                informPriority(key);
+            }
+        }
+        return enoughComponents;
+    }
+
+
+    public Term informPriority(int resID) throws ExternalActionFailedException {
+        String agName = "manufacturingManager";
+        APLNum resourceID = new APLNum(resID);
+        APLFunction event = new APLFunction("manageResourceLack", resourceID);
+        throwEvent(event, agName);
+        log("env>agent " + agName + " is informing priority for resource: " + resID);
+        return null;
+    }
+
+    public Term manageProductManufactureRequest(String agName, APLNum ProductID) throws ExternalActionFailedException {
+        
+        Boolean enoughComponents = checkResourcesAvailability(ProductID);
+
+        if (!enoughComponents) {
+            log("env> agent " + agName + " inform: there are not enough resources to manufacture product: "
+                    + ProductID + " - requeuing product manufacture");
+            APLFunction event = new APLFunction("continuousManufacture", ProductID);
+            throwEvent(event, agName);
+            return null;
+        }
+        
+        APLFunction event = new APLFunction("resourcesQualityCheck", ProductID);
+        throwEvent(event, agName);
+        log("env> agent " + agName + " is triggering the manufacture process for product " + ProductID);
+        return null;
+    }
+    
+    public Map<Integer, Integer> checkProductFormula(APLNum ProductId) throws ExternalActionFailedException {
+        String num = ProductId.toString();
+        String path = "src\\Formulas.csv";
+        List<String[]> csvBody = new ArrayList<>();
+        Map<Integer, Integer> components = new HashMap<>();
+
+        try (CSVReader reader = new CSVReader(new FileReader(path))) {
+            String[] nextLine;
+
+            // Read all rows at once and store them in csvBody
+            while ((nextLine = reader.readNext()) != null) {
+                csvBody.add(nextLine);
+            }
+
+            // Modify the quantity for the given product ID
+            for (int i = 1; i < csvBody.size(); i++) { // Start from 1 to skip the header
+                if (csvBody.get(i)[0].equals(num)) {
+                    String componentsString = csvBody.get(i)[1];
+                    // Split the componentsString by comma
+                    String[] componentsArray = componentsString.split(",");
+                    String[] componentsVal1 = componentsArray[0].split(":");
+                    String[] componentsVal2 = componentsArray[1].split(":");
+
+                    components.put(Integer.parseInt(componentsVal1[0]), Integer.parseInt(componentsVal1[1]));
+                    components.put(Integer.parseInt(componentsVal2[0]), Integer.parseInt(componentsVal2[1]));
+
+                    break;
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return components;
+    }
+    
+    public Boolean deliverLogistics(APLNum ProductID) throws ExternalActionFailedException {
+        String num = ProductID.toString();
+       
+        String path = "src\\Inventory.csv";
+        List<String[]> csvBody = new ArrayList<>();
+        boolean found = false;
+        try (CSVReader reader = new CSVReader(new FileReader(path))) {
+            String[] nextLine;
+
+            // Read all rows at once and store them in csvBody
+            while ((nextLine = reader.readNext()) != null) {
+                csvBody.add(nextLine);
+            }
+
+            // Modify the quantity for the given product ID
+            for (int i = 1; i < csvBody.size(); i++) { // Start from 1 to skip the header
+                if (csvBody.get(i)[0].equals(num)) {
+                    int oldQuantity = Integer.parseInt(csvBody.get(i)[1]);
+                    csvBody.get(i)[1] = Integer.toString(oldQuantity + 1);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                System.out.println("Product ID " + num + " not found.");
+            } else {
+                // Write the updated data back to the CSV file
+                try (CSVWriter writer = new CSVWriter(new FileWriter(path))) {
+                    writer.writeAll(csvBody);
+                    log("Quantity updated successfully.");
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return found;
+    }
+    
+    
 }
