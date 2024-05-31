@@ -1,6 +1,8 @@
 beliefupdates: 
   { not sendproduct(ProductID) } ProductSent(ProductID) {  sendproduct(ProductID) }
-  
+  { not stocked(ProductID) } ProductAvail(ProductID) {  stocked(ProductID) }
+  { stocked(ProductID) } ProductOutOfStock(ProductID) {  not stocked(ProductID) }
+
 beliefs:
     
 goals:
@@ -19,16 +21,35 @@ pcrules:
   if B(not sendproduct(ProductID)){
     adopta(sendproduct(ProductID));
     @env(trackInventory(ProductID), L);
+    if( B(L = [ProductID])) then 
+    {
+      ProductAvail(ProductID);
+    }else{
+      ProductOutOfStock(ProductID);
+    }
   }
   else{
     -sendproduct(ProductID);
     adopta(sendproduct(ProductID));
     @env(trackInventory(ProductID), L);
+    if( B(L = [ProductID])) then 
+    {
+      ProductAvail(ProductID);
+    }else{
+      ProductOutOfStock(ProductID);
+    }
   }
 
   event(request(ProductID), env) <-true | 
   {
+    ProductOutOfStock(ProductID);
     send(manufacturingManager, request, check(ProductID));
   }
+
+  message( manufacturingManager, inform, La, On, delivered(ProductID)) <- true | 
+  {
+    ProductAvail(ProductID);
+  }
+
 prrules:
     
