@@ -3,22 +3,17 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Collection;
-import java.util.Random;
-import java.util.Scanner;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import apapl.Environment;
 import apapl.ExternalActionFailedException;
 import apapl.data.APLFunction;
 import apapl.data.APLIdent;
+import apapl.data.APLList;
 import apapl.data.APLNum;
 import apapl.data.Term;
 import blockworld.lib.ObsVect;
@@ -293,9 +288,10 @@ public class Env extends Environment implements ObsVectListener {
             APLFunction fun = new APLFunction("request", aplNum);
             throwEvent(fun, agName);
             log("env> agent " + agName + " wants to request more products with id " + num);
-
+            return null;
+        }else{
+            return new APLList(new APLNum(aplNum.toInt()));
         }
-        return null;
     }
 
     public Term shipProd(String agName, APLNum aplNum) throws ExternalActionFailedException {
