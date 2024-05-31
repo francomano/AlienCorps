@@ -10,7 +10,7 @@ goals:
 plans:
 
 pgrules:
-  sendproduct(ProductID) <- true |
+  sendproduct(ProductID) <- stocked(ProductID) |
   { 
     @env( shipProd( ProductID ), L);
     ProductSent(ProductID);
