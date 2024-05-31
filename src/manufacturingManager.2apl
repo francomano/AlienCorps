@@ -65,7 +65,7 @@ pcrules:
            @env(finalProductQualityCheck(ProductID), L);
         }
 
-    event(request(ProductID), env) <-true | 
+    event(deliverToLogistics(ProductID), env) <-true | 
         {
             send(logisticManager, inform, delivered(ProductID));
         }
